@@ -1,0 +1,27 @@
+PATH
+  remote: .
+  specs:
+    ppp (0.1.0)
+      awesome_print
+      binding_of_caller
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    awesome_print (1.8.0)
+    binding_of_caller (0.8.0)
+      debug_inspector (>= 0.0.1)
+    debug_inspector (0.0.3)
+    minitest (5.13.0)
+    rake (12.3.3)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  minitest (~> 5.0)
+  ppp!
+  rake (~> 12.0)
+
+BUNDLED WITH
+   2.1.2
