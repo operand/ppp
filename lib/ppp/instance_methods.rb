@@ -10,8 +10,8 @@ module PPP
       output = ''
       output += ('—' * 80).yellow
       output += "\n"
-      output += "location: #{binding_name(current_binding)}\n"
-      output += "caller:   #{binding_name(caller_binding)}\n"
+      output += "#{ 'location:'.blue } #{binding_name(current_binding)}\n"
+      output += "#{ 'caller:'.blue }   #{binding_name(caller_binding)}\n"
 
       if (object == :none_provided) && (current_method_name = current_binding.eval('__method__'))
         # print current method argument values
@@ -19,7 +19,7 @@ module PPP
         parameters = the_method.parameters.map do |arg|
           ai_inspect(current_binding.eval(arg[1].to_s))
         end
-        output += "args:        (#{parameters.join(', ')})\n"
+        output += "#{ 'args:'.blue }     (#{parameters.join(', ')})\n"
       end
 
       if (contents = binding_contents(current_binding))
