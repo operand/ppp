@@ -40,10 +40,10 @@ module PPP
       return object unless object == :none_provided
     end
 
-    def binding_name(the_binding)
-      line_number = binding_line_number(the_binding)
-      context = binding_context(the_binding)
-      filename = binding_filename(the_binding)
+    def binding_name(ppp_binding)
+      line_number = binding_line_number(ppp_binding)
+      context = binding_context(ppp_binding)
+      filename = binding_filename(ppp_binding)
 
       "#{context.ai}  #{filename}:#{line_number}"
     end
@@ -58,13 +58,13 @@ module PPP
       end
     end
 
-    def binding_filename(the_binding)
-      the_binding.eval('__FILE__').gsub("#{pwd}/", '')
+    def binding_filename(ppp_binding)
+      ppp_binding.source_location[0].gsub("#{pwd}/", '')
     end
 
-    def binding_contents(the_binding)
-      filename = the_binding.eval('__FILE__')
-      line_number = the_binding.eval('__LINE__')
+    def binding_contents(ppp_binding)
+      filename = ppp_binding.source_location[0]
+      line_number = ppp_binding.source_location[1]
       lines = File.open(filename).to_a
 
       <<~LINES.strip
@@ -78,15 +78,15 @@ module PPP
       nil
     end
 
-    def binding_line_number(the_binding)
-      the_binding.eval('__LINE__')
+    def binding_line_number(ppp_binding)
+      ppp_binding.source_location[1]
     end
 
-    def binding_context(the_binding)
-      if (method_name = the_binding.eval('__method__'))
-        the_binding.eval("self.method(:#{method_name})")
+    def binding_context(ppp_binding)
+      if (method_name = ppp_binding.eval('__method__'))
+        ppp_binding.eval("self.method(:\"#{method_name}\")")
       else
-        the_binding.eval('self.class')
+        ppp_binding.eval('self.class')
       end
     end
 

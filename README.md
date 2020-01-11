@@ -1,6 +1,12 @@
 # PPP
 
+**PPP is currently a work in progress and should not be considered stable until a 1.0 release.**
+
+## Description
+
 Like `p` and `pp`, `ppp` is used for print based debugging. It will print out nicely formatted output as well as contextual information such as the recent stack and local variable values.
+
+**PPP should NEVER be used in a production environment. It is solely for development purposes.**
 
 ## Installation
 
