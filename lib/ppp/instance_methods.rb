@@ -10,8 +10,8 @@ module PPP
       output = ''
       output += ('—' * 80).yellow
       output += "\n"
-      output += "called from: #{binding_name(caller_binding)}\n"
-      output += "location:    #{binding_name(current_binding)}\n"
+      output += "location: #{binding_name(current_binding)}\n"
+      output += "caller:   #{binding_name(caller_binding)}\n"
 
       if (object == :none_provided) && (current_method_name = current_binding.eval('__method__'))
         # print current method argument values
@@ -41,11 +41,51 @@ module PPP
     end
 
     def binding_name(ppp_binding)
-      line_number = binding_line_number(ppp_binding)
+      line = binding_line(ppp_binding)
+      file = binding_file(ppp_binding).gsub("#{pwd}/", '')
       context = binding_context(ppp_binding)
-      filename = binding_filename(ppp_binding)
 
-      "#{context.ai}  #{filename}:#{line_number}"
+      "#{context.ai}  #{file}:#{line}"
+    end
+
+    def binding_file(ppp_binding)
+      if ppp_binding.respond_to? :source_location
+        ppp_binding.source_location[0]
+      else
+        ppp_binding.eval("__FILE__")
+      end
+    end
+
+    def binding_line(ppp_binding)
+      if ppp_binding.respond_to? :source_location
+        ppp_binding.source_location[1]
+      else
+        ppp_binding.eval('__LINE__')
+      end
+    end
+
+    def binding_contents(ppp_binding)
+      file = binding_file(ppp_binding)
+      line = binding_line(ppp_binding)
+      lines = File.open(file).to_a
+
+      <<~LINES.strip
+        #{format_line(lines, line - 3)}
+        #{format_line(lines, line - 2)}
+        #{format_line(lines, line - 1, main: true)}
+        #{format_line(lines, line - 0)}
+        #{format_line(lines, line + 1)}
+      LINES
+    rescue Errno::ENOENT # No such file or directory
+      nil
+    end
+
+    def binding_context(ppp_binding)
+      if (method_name = ppp_binding.eval('__method__'))
+        ppp_binding.eval("self.method(:\"#{method_name}\")")
+      else
+        ppp_binding.eval('self.class')
+      end
     end
 
     def format_line(lines, line_number, main: false)
@@ -55,38 +95,6 @@ module PPP
         "#{line_number} > #{contents.gsub(/\s*$/, '').gsub('ppp', 'ppp'.green)}"
       else
         "#{line_number.to_s.gray}   #{contents.gsub(/\s*$/, '').gray}"
-      end
-    end
-
-    def binding_filename(ppp_binding)
-      ppp_binding.source_location[0].gsub("#{pwd}/", '')
-    end
-
-    def binding_contents(ppp_binding)
-      filename = ppp_binding.source_location[0]
-      line_number = ppp_binding.source_location[1]
-      lines = File.open(filename).to_a
-
-      <<~LINES.strip
-        #{format_line(lines, line_number - 3)}
-        #{format_line(lines, line_number - 2)}
-        #{format_line(lines, line_number - 1, main: true)}
-        #{format_line(lines, line_number - 0)}
-        #{format_line(lines, line_number + 1)}
-      LINES
-    rescue Errno::ENOENT # No such file or directory
-      nil
-    end
-
-    def binding_line_number(ppp_binding)
-      ppp_binding.source_location[1]
-    end
-
-    def binding_context(ppp_binding)
-      if (method_name = ppp_binding.eval('__method__'))
-        ppp_binding.eval("self.method(:\"#{method_name}\")")
-      else
-        ppp_binding.eval('self.class')
       end
     end
 
